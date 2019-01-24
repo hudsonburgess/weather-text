@@ -16,6 +16,6 @@ An SMS-based weather app
 ## Project setup
 
 1. `npm install`
-1. `npm build` - this compiles source files into the `dist` directory
+1. `npm run build` - this compiles source files into the `dist` directory
 1. `npm start` - start the application
 
