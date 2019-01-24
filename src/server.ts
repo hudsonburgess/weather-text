@@ -1,19 +1,27 @@
-const http = require('http');
-const express = require('express');
+import { getCurrentWeatherMessageForZip } from './weather/weather';
+import express = require('express');
+import http = require('http');
+import bodyParser = require('body-parser');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 
 const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
 
-app.post('/sms', (req, res) => {
-  const twiml = new MessagingResponse();
+app.post('/sms', (req: express.Request, res: express.Response) => {
+  const messageBody: string = req.body.Body;
+  const zipCode = messageBody.trim().split(/\s+/)[0];
+  console.log('weather requested for zip ' + zipCode);
 
-  twiml.message('The Robots are coming! Head for the hills!');
-
-  res.writeHead(200, {'Content-Type': 'text/xml'});
-  res.end(twiml.toString());
+  getCurrentWeatherMessageForZip(zipCode).then(msg => {
+    console.log(msg);
+    const twiml = new MessagingResponse();
+    twiml.message(msg);
+    res.writeHead(200, { 'Content-Type': 'text/xml' });
+    res.end(twiml.toString());
+  });
 });
 
-http.createServer(app).listen(1337, () => {
-  console.log('Express server listening on port 1337');
+http.createServer(app).listen(9328, () => {
+  console.log('WeatherText application listening on port 9328');
 });
 

@@ -1,3 +1,6 @@
+// demo script for sending a text message
+// not used in the application
+
 const accountSid = process.env.WEATHER_TEXT_ACCOUNT_SID;
 const authToken = process.env.WEATHER_TEXT_AUTH_TOKEN;
 const client = require('twilio')(accountSid, authToken);
