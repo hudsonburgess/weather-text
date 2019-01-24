@@ -1,0 +1,16 @@
+{
+  "name": "weather-text",
+  "version": "1.0.0",
+  "description": "SMS-based weather app",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "author": "Hudson Burgess",
+  "license": "ISC",
+  "dependencies": {
+    "typescript": "^3.2.4"
+  }
+}
