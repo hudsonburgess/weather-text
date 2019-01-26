@@ -1,5 +1,6 @@
-import { CurrentConditions } from "./current-condtions";
 import Axios from 'axios';
+import { CurrentConditions } from "./current-condtions";
+import { Forecast } from "./forecast";
 
 export function getCurrentWeatherMessageForZip(zip: string): Promise<string> {
     const weatherUrl = 'http://api.openweathermap.org/data/2.5/weather';
@@ -9,10 +10,21 @@ export function getCurrentWeatherMessageForZip(zip: string): Promise<string> {
     const weatherParams = { zip: zipParam, appid: apiKey, units: 'metric' };
     return Axios.get<CurrentConditions>(weatherUrl, { params: weatherParams })
         .then(res => res.data)
-        .then(cc => composeSmsForWeatherConditions(zip, cc));
+        .then(cc => composeSmsForCurrentConditions(zip, cc));
 }
 
-function composeSmsForWeatherConditions(zip: string, cc: CurrentConditions): string {
+export function getTodaysForecastForZip(zip: string): Promise<string> {
+    const forecastUrl = 'http://api.openweathermap.org/data/2.5/forecast';
+    const zipParam = zip + ',us';
+    const apiKey = process.env.OWM_KEY;
+
+    const weatherParams = { zip: zipParam, appid: apiKey, units: 'metric' };
+    return Axios.get<Forecast>(forecastUrl, { params: weatherParams })
+        .then(res => res.data)
+        .then(f => composeSmsForTodaysForecast(zip, f));
+}
+
+function composeSmsForCurrentConditions(zip: string, cc: CurrentConditions): string {
     const description = cc.weather.map(w => w.description)[0];
     const temperature = cc.main.temp;
     const humidity = Math.round(cc.main.humidity);
@@ -27,6 +39,30 @@ function composeSmsForWeatherConditions(zip: string, cc: CurrentConditions): str
         `${windDirection} ${windSpeed} km/h wind`,
         `${humidity}% humidity`,
     ].join('\n');
+}
+
+function composeSmsForTodaysForecast(zip: string, fc: Forecast): string {
+    const midnightTonight: number = getMidnightTonightTimestamp();
+    const todaysForecasts: Forecast["list"] = fc.list.filter(f => f.dt < midnightTonight);
+
+    const todaysHigh: number = Math.round(
+        todaysForecasts
+            .map(f => f.main.temp)
+            .reduce((a, b) => Math.max(a, b))
+    );
+
+    return [
+        `-`,
+        ``,
+        `Today's high for ZIP code ${zip}: ${todaysHigh}˚C`
+    ].join('\n');
+}
+
+function getMidnightTonightTimestamp(): number {
+    const result = new Date();
+    result.setDate(result.getDate() + 1);
+    result.setHours(0, 0, 0, 0);
+    return result.valueOf();
 }
 
 function degToCardinalDirection(deg: number): string {
