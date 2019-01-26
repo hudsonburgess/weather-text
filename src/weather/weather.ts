@@ -9,10 +9,6 @@ export function getCurrentWeatherMessageForZip(zip: string): Promise<string> {
     const weatherParams = { zip: zipParam, appid: apiKey, units: 'metric' };
     return Axios.get<CurrentConditions>(weatherUrl, { params: weatherParams })
         .then(res => res.data)
-        .then(cc => {
-            console.log(cc);
-            return cc;
-        })
         .then(cc => composeSmsForWeatherConditions(zip, cc));
 }
 
